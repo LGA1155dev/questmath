@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geometria Quest — O Duolingo dos Ângulos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#3E7BFA; --blue-dim:#1c3a7a;
+  --green:#2FBE79; --green-dim:#123f2c;
+  --purple:#9B6BFF; --purple-dim:#3a2a6b;
+  --orange:#FF9642; --orange-dim:#5c3a14;
+  --red:#FF5C5C; --red-dim:#5c1f1f;
+  --yellow:#FFC93C; --yellow-dim:#5c4a12;
+  --bg:#10161A; --bg2:#161F24; --card:#1B262C; --card2:#212F36;
+  --line:#2B3A42; --text:#EAF2F0; --text-dim:#9FB2B8;
+  --radius:18px;
+  --font-display:'Baloo 2',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#F4F8F7; --bg2:#ECF3F2; --card:#FFFFFF; --card2:#F3F7F6;
+  --line:#DCE6E4; --text:#132025; --text-dim:#54696E;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);transition:background .3s,color .3s;-webkit-tap-highlight-color:transparent;}
+h1,h2,h3,.display{font-family:var(--font-display);}
+.mono{font-family:var(--font-mono);}
+button{font-family:inherit;cursor:pointer;}
+a{color:inherit;}
+::selection{background:var(--blue);color:#fff;}
+:focus-visible{outline:3px solid var(--yellow); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){*{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}}
+
+/* ---------- Layout ---------- */
+#app{max-width:980px;margin:0 auto;padding:0 16px 80px;}
+.topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+.topbar-inner{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:10px 16px;}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;font-size:1.15rem;white-space:nowrap;cursor:pointer;border:none;background:none;color:var(--text);}
+.brand .mascot{font-size:1.5rem;}
+.spacer{flex:1;}
+.stat-pill{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:100px;padding:6px 12px;font-weight:700;font-size:.85rem;white-space:nowrap;}
+.stat-pill.xp{color:var(--yellow);}
+.stat-pill.streak{color:var(--orange);}
+.iconbtn{background:var(--card);border:1px solid var(--line);border-radius:100px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;color:var(--text);}
+
+.xpbar-wrap{max-width:980px;margin:0 auto;padding:0 16px;}
+.xpbar-track{height:8px;border-radius:100px;background:var(--card2);overflow:hidden;margin-top:2px;}
+.xpbar-fill{height:100%;background:linear-gradient(90deg,var(--yellow),#ffe08a);border-radius:100px;transition:width .6s cubic-bezier(.2,.9,.3,1.2);}
+
+/* ---------- Mascot bubble ---------- */
+.bubble{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:14px 0;}
+.bubble .mascot{font-size:1.8rem;flex-shrink:0;}
+.bubble.tip{border-color:var(--blue-dim);}
+.bubble.success{border-color:var(--green);background:color-mix(in srgb, var(--green) 10%, var(--card));}
+.bubble.error{border-color:var(--red);background:color-mix(in srgb, var(--red) 10%, var(--card));}
+.bubble .label{font-weight:800;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);margin-bottom:2px;}
+.bubble.success .label{color:var(--green);}
+.bubble.error .label{color:var(--red);}
+.bubble p{margin:0;line-height:1.5;}
+
+/* ---------- Hero / Home ---------- */
+.hero{padding:28px 0 8px;}
+.hero h1{font-size:clamp(1.7rem,5vw,2.4rem);margin:0 0 6px;line-height:1.1;}
+.hero p{color:var(--text-dim);margin:0 0 18px;max-width:56ch;}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.btn{border:none;border-radius:14px;padding:12px 18px;font-weight:700;font-size:.95rem;display:inline-flex;align-items:center;gap:8px;transition:transform .15s;}
+.btn:active{transform:scale(.96);}
+.btn-primary{background:var(--yellow);color:#241a02;}
+.btn-secondary{background:var(--card);border:1px solid var(--line);color:var(--text);}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text-dim);}
+.btn-block{width:100%;justify-content:center;}
+.btn-lg{padding:16px 22px;font-size:1.05rem;border-radius:16px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ---------- Level card ---------- */
+.level-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:18px 0;}
+.level-badge{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--yellow),var(--orange));display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;}
+.level-info{flex:1;min-width:0;}
+.level-info .name{font-weight:800;font-family:var(--font-display);}
+.level-info .sub{color:var(--text-dim);font-size:.82rem;}
+
+/* ---------- Map ---------- */
+.section-title{font-size:1.1rem;font-weight:800;margin:26px 0 12px;display:flex;align-items:center;gap:8px;}
+.map{display:flex;flex-direction:column;gap:0;position:relative;padding-left:8px;}
+.map-node{position:relative;display:flex;align-items:center;gap:14px;padding:12px 10px;border-radius:16px;text-align:left;background:none;border:none;color:var(--text);}
+.map-node:not(.locked):hover{background:var(--card2);}
+.map-node::before{content:'';position:absolute;left:29px;top:-8px;width:2px;height:16px;background:var(--line);}
+.map-node:first-child::before{display:none;}
+.node-dot{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;border:3px solid var(--line);background:var(--card);position:relative;z-index:1;}
+.map-node.done .node-dot{background:var(--topic-color);border-color:var(--topic-color);}
+.map-node.available .node-dot{border-color:var(--topic-color);box-shadow:0 0 0 4px color-mix(in srgb, var(--topic-color) 22%, transparent);}
+.map-node.locked .node-dot{opacity:.45;}
+.map-node.locked{cursor:not-allowed;opacity:.55;}
+.node-title{font-weight:700;font-size:.98rem;}
+.node-sub{color:var(--text-dim);font-size:.78rem;}
+.node-check{margin-left:auto;font-size:1.2rem;color:var(--green);}
+
+/* ---------- Cards ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin:14px 0;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr;}}
+.type-card{border-radius:16px;padding:16px;border:2px solid var(--line);background:var(--card2);}
+.type-card .big{font-family:var(--font-mono);font-weight:700;font-size:1.3rem;}
+
+/* ---------- Lesson header ---------- */
+.lesson-top{display:flex;align-items:center;gap:10px;margin:18px 0 6px;}
+.lesson-top .backbtn{background:var(--card);border:1px solid var(--line);border-radius:100px;padding:8px 14px;font-weight:700;font-size:.85rem;color:var(--text);}
+.topic-tag{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:.75rem;letter-spacing:.05em;text-transform:uppercase;padding:4px 10px;border-radius:100px;}
+.lesson-h1{font-size:1.6rem;margin:8px 0 4px;}
+.progress-dots{display:flex;gap:6px;margin:10px 0 4px;}
+.progress-dots span{width:26px;height:6px;border-radius:100px;background:var(--card2);}
+.progress-dots span.on{background:var(--topic-color);}
+
+/* svg stage */
+.stage{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:10px;display:flex;justify-content:center;margin:14px 0;}
+.stage svg{width:100%;max-width:340px;height:auto;touch-action:none;}
+.handle{cursor:grab;}
+.handle:active{cursor:grabbing;}
+.controls-row{display:flex;flex-direction:column;gap:10px;margin:12px 0;}
+input[type=range]{width:100%;accent-color:var(--topic-color, var(--blue));}
+.slider-label{display:flex;justify-content:space-between;font-size:.85rem;color:var(--text-dim);font-weight:600;}
+.slider-label .val{font-family:var(--font-mono);color:var(--text);font-weight:700;}
+
+.why-toggle{background:none;border:1px dashed var(--line);border-radius:100px;padding:7px 14px;font-weight:700;font-size:.82rem;color:var(--text-dim);margin:8px 0;}
+.why-box{display:none;border-left:3px solid var(--yellow);background:var(--card2);padding:12px 14px;border-radius:0 12px 12px 0;margin:8px 0;font-size:.9rem;line-height:1.55;}
+.why-box.open{display:block;}
+
+/* exercise */
+.exercise-question{font-weight:700;font-size:1.02rem;margin-bottom:10px;}
+.exercise-options{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
+.opt-btn{text-align:left;padding:13px 16px;border-radius:12px;border:2px solid var(--line);background:var(--card2);color:var(--text);font-weight:600;font-size:.95rem;}
+.opt-btn:not(:disabled):hover{border-color:var(--topic-color);}
+.opt-btn.correct{border-color:var(--green);background:color-mix(in srgb, var(--green) 18%, var(--card2));}
+.opt-btn.incorrect{border-color:var(--red);background:color-mix(in srgb, var(--red) 18%, var(--card2));}
+.opt-btn:disabled{cursor:default;}
+.input-row{display:flex;gap:10px;align-items:center;margin:14px 0;}
+.num-input{flex:1;font-family:var(--font-mono);font-size:1.3rem;font-weight:700;text-align:center;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--card2);color:var(--text);}
+.steps{display:flex;flex-direction:column;gap:6px;margin:10px 0;font-family:var(--font-mono);font-size:.95rem;}
+.steps div{opacity:0;transform:translateY(4px);animation:stepin .4s forwards;}
+@keyframes stepin{to{opacity:1;transform:none;}}
+
+.badge{display:inline-flex;align-items:center;gap:6px;background:var(--yellow-dim);color:var(--yellow);font-weight:800;font-size:.78rem;padding:4px 10px;border-radius:100px;}
+
+/* macete card */
+.macete{border-radius:16px;padding:14px 16px;background:linear-gradient(135deg, color-mix(in srgb, var(--topic-color) 25%, var(--card2)), var(--card2));border:1px solid var(--topic-color);margin:14px 0;}
+.macete .label{font-weight:800;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--topic-color);margin-bottom:4px;}
+.macete .phrase{font-family:var(--font-mono);font-weight:700;font-size:1rem;}
+
+/* complete screen */
+.complete-wrap{text-align:center;padding:20px 0;}
+.complete-emoji{font-size:3.2rem;}
+.xp-gain{font-family:var(--font-mono);font-weight:800;font-size:1.4rem;color:var(--yellow);margin:6px 0 16px;}
+
+/* toast */
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 20px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:all .3s;z-index:999;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* boss */
+.boss-header{display:flex;align-items:center;gap:12px;justify-content:space-between;margin:14px 0;}
+.lives{display:flex;gap:4px;font-size:1.3rem;}
+.boss-q-index{font-family:var(--font-mono);color:var(--text-dim);font-size:.85rem;}
+
+/* map legend for lab */
+.lab-block{margin:22px 0;}
+.lab-block h3{margin:0 0 4px;}
+
+.review-panel{background:var(--card);border:1px solid var(--red);border-left-width:4px;border-radius:var(--radius);padding:16px;margin:16px 0;}
+.review-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line);}
+.review-row:first-of-type{border-top:none;}
+
+footer{text-align:center;color:var(--text-dim);font-size:.78rem;padding:30px 0 10px;}
+.hidden{display:none !important;}
+</style>
+</head>
+<body data-theme="dark">
+<div class="topbar">
+  <div class="topbar-inner">
+    <button class="brand" id="brandBtn"><span class="mascot">🐒</span><span>Geometria Quest</span></button>
+    <div class="spacer"></div>
+    <div class="stat-pill streak">🔥 <span id="streakVal">0</span></div>
+    <div class="stat-pill xp">⭐ <span id="xpVal">0</span> XP</div>
+    <button class="iconbtn" id="themeBtn" title="Alternar tema" aria-label="Alternar tema claro/escuro">🌙</button>
+  </div>
+  <div class="xpbar-wrap"><div class="xpbar-track"><div class="xpbar-fill" id="xpFill" style="width:0%"></div></div></div>
+</div>
+
+<div id="app"></div>
+<div id="toast"></div>
+
+<script>
+/* ============================= DATA & STATE ============================= */
+const LEVELS = [
+  {name:'Filhote de Geômetra', min:0, emoji:'🐣'},
+  {name:'Macaco dos Ângulos', min:150, emoji:'🐒'},
+  {name:'Domador de Triângulos', min:400, emoji:'🔺'},
+  {name:'Mestre dos Polígonos', min:800, emoji:'⬡'},
+  {name:'Senhor das Diagonais', min:1300, emoji:'╱'},
+  {name:'Mestre da Geometria', min:2000, emoji:'👑'}
+];
+
+const TOPICS = [
+  {id:'ang-intro', title:'O que são ângulos?', emoji:'📐', color:'--blue', short:'Duas linhas, um espaço entre elas.'},
+  {id:'ang-tipos', title:'Tipos de ângulos', emoji:'🔵', color:'--blue', short:'Agudo, reto, obtuso e raso.'},
+  {id:'tri-intro', title:'Triângulos', emoji:'🔺', color:'--green', short:'A soma dos ângulos sempre dá 180°.'},
+  {id:'descobrir-x', title:'Descobrindo X', emoji:'🧮', color:'--green', short:'Ache o ângulo escondido.'},
+  {id:'tri-classif', title:'Classificação dos triângulos', emoji:'📏', color:'--green', short:'Por lados e por ângulos.'},
+  {id:'tri-desigualdade', title:'Isso forma um triângulo?', emoji:'🧵', color:'--green', short:'A desigualdade triangular.'},
+  {id:'ang-externo', title:'Ângulo externo', emoji:'↗️', color:'--blue', short:'O lado que continua a andar.'},
+  {id:'ang-opv', title:'Opostos pelo vértice', emoji:'✖️', color:'--blue', short:'Duas retas se cruzando.'},
+  {id:'paralelas', title:'Paralelas e transversal', emoji:'↔️', color:'--purple', short:'Correspondentes, alternos, colaterais.'},
+  {id:'poligonos', title:'Polígonos', emoji:'⬡', color:'--purple', short:'De 3 a 8 lados (e além).'},
+  {id:'soma-internos', title:'Soma dos ângulos internos', emoji:'Σ', color:'--purple', short:'S = (n − 2) × 180°'},
+  {id:'poligono-regular', title:'Polígonos regulares', emoji:'⭐', color:'--purple', short:'Todo mundo igual, todo mundo dividido.'},
+  {id:'diagonais', title:'Diagonais', emoji:'╱', color:'--orange', short:'d = n(n − 3) / 2'}
+];
+
+const DEFAULT_STATE = {xp:0, streak:0, lastActiveDate:null, completed:{}, wrong:{}, correct:{}, totalAnswered:0, totalCorrect:0, theme:'dark'};
+let state = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem('geoquest_state_v1');
+    if(!raw) return structuredClone(DEFAULT_STATE);
+    return Object.assign(structuredClone(DEFAULT_STATE), JSON.parse(raw));
+  }catch(e){ return structuredClone(DEFAULT_STATE); }
+}
+function saveState(){ localStorage.setItem('geoquest_state_v1', JSON.stringify(state)); }
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function bumpStreak(){
+  const today = todayStr();
+  if(state.lastActiveDate === today) return;
+  if(!state.lastActiveDate){ state.streak = 1; }
+  else{
+    const diffDays = Math.round((new Date(today) - new Date(state.lastActiveDate)) / 86400000);
+    if(diffDays === 1) state.streak += 1;
+    else if(diffDays > 1) state.streak = 1;
+  }
+  state.lastActiveDate = today;
+  saveState();
+  renderTopbar();
+}
+
+function computeLevel(xp){
+  let idx = 0;
+  for(let i=0;i<LEVELS.length;i++){ if(xp >= LEVELS[i].min) idx = i; }
+  const cur = LEVELS[idx];
+  const next = LEVELS[idx+1];
+  const progress = next ? Math.min(100, Math.round(((xp-cur.min)/(next.min-cur.min))*100)) : 100;
+  return {idx, cur, next, progress};
+}
+
+function addXP(amount, topicId){
+  bumpStreak();
+  state.xp += amount;
+  saveState();
+  renderTopbar();
+  showToast(`+${amount} XP ⭐`);
+}
+
+function markComplete(topicId){
+  state.completed[topicId] = true;
+  saveState();
+}
+
+function recordAnswer(topicId, correct){
+  state.totalAnswered++;
+  if(correct){ state.totalCorrect++; state.correct[topicId] = (state.correct[topicId]||0)+1; }
+  else { state.wrong[topicId] = (state.wrong[topicId]||0)+1; }
+  saveState();
+}
+
+function topicById(id){ return TOPICS.find(t=>t.id===id); }
+function topicIndex(id){ return TOPICS.findIndex(t=>t.id===id); }
+function topicStatus(id){
+  if(state.completed[id]) return 'done';
+  const idx = topicIndex(id);
+  if(idx === 0) return 'available';
+  const prev = TOPICS[idx-1];
+  return state.completed[prev.id] ? 'available' : 'locked';
+}
+
+/* ============================= HELPERS ============================= */
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!==undefined) e.innerHTML=html; return e; }
+function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function svgPointFromEvent(svg, evt){
+  const pt = svg.createSVGPoint();
+  pt.x = evt.clientX; pt.y = evt.clientY;
+  const ctm = svg.getScreenCTM();
+  if(!ctm) return {x:0,y:0};
+  const p = pt.matrixTransform(ctm.inverse());
+  return {x:p.x, y:p.y};
+}
+function polar(cx,cy,r,deg){ const rad=deg*Math.PI/180; return {x:cx+r*Math.cos(rad), y:cy - r*Math.sin(rad)}; }
+function arcPath(cx,cy,r,a1,a2){
+  const lo = Math.min(a1,a2), hi = Math.max(a1,a2);
+  const p1 = polar(cx,cy,r,lo), p2 = polar(cx,cy,r,hi);
+  const large = (hi-lo) > 180 ? 1 : 0;
+  return `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A ${r} ${r} 0 ${large} 0 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+}
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+function bubble(container, type, label, text){
+  const b = el('div', `bubble ${type}`);
+  b.innerHTML = `<span class="mascot">${type==='error'?'🐒💭':type==='success'?'🐒🎉':'🐒'}</span><div><div class="label">${label}</div><p>${text}</p></div>`;
+  container.appendChild(b);
+  return b;
+}
+
+function maceteCard(container, phrase, color){
+  const m = el('div','macete');
+  m.style.setProperty('--topic-color', cssVar(color));
+  m.innerHTML = `<div class="label">💡 Macete do macaco</div><div class="phrase">${phrase}</div>`;
+  container.appendChild(m);
+}
+
+/* ============================= EXERCISE ENGINE ============================= */
+// Multiple choice exercise renderer
+function renderMCExercise(container, ex, onDone){
+  const wrap = el('div','card');
+  wrap.style.setProperty('--topic-color', cssVar(ex.colorVar||'--blue'));
+  const q = el('div','exercise-question', ex.prompt);
+  wrap.appendChild(q);
+  if(ex.svg){ const stage = el('div','stage'); stage.innerHTML = ex.svg; wrap.appendChild(stage); }
+  const optsWrap = el('div','exercise-options');
+  wrap.appendChild(optsWrap);
+  const feedbackHolder = el('div');
+  wrap.appendChild(feedbackHolder);
+  const nextBtnHolder = el('div');
+  wrap.appendChild(nextBtnHolder);
+
+  ex.options.forEach((opt, i)=>{
+    const btn = el('button','opt-btn', opt);
+    btn.onclick = ()=>{
+      [...optsWrap.children].forEach(b=>b.disabled=true);
+      const correct = i === ex.correctIndex;
+      btn.classList.add(correct?'correct':'incorrect');
+      if(!correct) optsWrap.children[ex.correctIndex].classList.add('correct');
+      feedbackHolder.innerHTML='';
+      bubble(feedbackHolder, correct?'success':'error', correct?'Boa!':'Calma, vamos entender', ex.explanation);
+      recordAnswer(ex.topic, correct);
+      if(correct) addXP(ex.xp||20, ex.topic);
+      const nb = el('button','btn btn-primary btn-block', correct? 'Continuar →' : 'Entendi, continuar →');
+      nb.onclick = ()=>onDone(correct);
+      nextBtnHolder.innerHTML=''; nextBtnHolder.appendChild(nb);
+    };
+    optsWrap.appendChild(btn);
+  });
+  container.innerHTML=''; container.appendChild(wrap);
+}
+
+// Numeric input exercise renderer, with step-by-step reveal
+function renderInputExercise(container, ex, onDone){
+  const wrap = el('div','card');
+  wrap.style.setProperty('--topic-color', cssVar(ex.colorVar||'--green'));
+  wrap.appendChild(el('div','exercise-question', ex.prompt));
+  if(ex.svg){ const stage = el('div','stage'); stage.innerHTML = ex.svg; wrap.appendChild(stage); }
+  const inputRow = el('div','input-row');
+  const input = el('input','num-input');
+  input.type='number'; input.placeholder='?°';
+  const checkBtn = el('button','btn btn-primary','Verificar');
+  inputRow.appendChild(input); inputRow.appendChild(checkBtn);
+  wrap.appendChild(inputRow);
+  const feedbackHolder = el('div');
+  wrap.appendChild(feedbackHolder);
+  const nextBtnHolder = el('div');
+  wrap.appendChild(nextBtnHolder);
+
+  function check(){
+    const val = parseFloat(input.value);
+    if(isNaN(val)) return;
+    input.disabled = true; checkBtn.disabled = true;
+    const correct = Math.abs(val - ex.answer) < (ex.tolerance||0.6);
+    feedbackHolder.innerHTML='';
+    if(correct){
+      bubble(feedbackHolder,'success','Boa!', `Isso mesmo, x = ${ex.answer}°.`);
+    } else {
+      const stepsEl = el('div','steps');
+      (ex.steps||[]).forEach((s,i)=>{ const d=el('div',null,s); d.style.animationDelay=(i*0.35)+'s'; stepsEl.appendChild(d); });
+      bubble(feedbackHolder,'error','Vamos desmontar essa questão', `A resposta certa era ${ex.answer}°. Olha o passo a passo:`);
+      feedbackHolder.appendChild(stepsEl);
+    }
+    recordAnswer(ex.topic, correct);
+    if(correct) addXP(ex.xp||30, ex.topic);
+    const nb = el('button','btn btn-primary btn-block', 'Continuar →');
+    nb.onclick = ()=>onDone(correct);
+    nextBtnHolder.innerHTML=''; nextBtnHolder.appendChild(nb);
+  }
+  checkBtn.onclick = check;
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') check(); });
+  container.innerHTML=''; container.appendChild(wrap);
+}
+
+/* ============================= SHAPE HELPERS ============================= */
+function triangleSVG({top='',bl='',br='',highlight=null, sub=''}={}){
+  const pTop={x:150,y:36}, pBL={x:34,y:250}, pBR={x:266,y:250};
+  const hi = (name)=> highlight===name ? ' fill="var(--red)"' : ' fill="currentColor"';
+  return `<svg viewBox="0 0 300 280">
+    <polygon points="${pTop.x},${pTop.y} ${pBL.x},${pBL.y} ${pBR.x},${pBR.y}" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    <text x="${pTop.x}" y="${pTop.y+26}" text-anchor="middle" font-weight="700" font-size="17"${hi('top')}>${top}</text>
+    <text x="${pBL.x+22}" y="${pBL.y-10}" text-anchor="middle" font-weight="700" font-size="17"${hi('bl')}>${bl}</text>
+    <text x="${pBR.x-22}" y="${pBR.y-10}" text-anchor="middle" font-weight="700" font-size="17"${hi('br')}>${br}</text>
+    ${sub? `<text x="150" y="272" text-anchor="middle" font-size="12" fill="var(--text-dim)">${sub}</text>`:''}
+  </svg>`;
+}
+
+function polygonPoints(n, cx=150, cy=150, r=105, rot=-90){
+  const pts=[];
+  for(let i=0;i<n;i++){ const a = rot + i*(360/n); pts.push(polar(cx,cy,r,-a)); }
+  return pts;
+}
+function polygonSVG(n, {diagonals=false, labelAngles=false, highlightVertex=null}={}){
+  const pts = polygonPoints(n);
+  const pointsStr = pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  let diagStr='';
+  if(diagonals){
+    for(let i=0;i<n;i++) for(let j=i+2;j<n;j++){ if(!(i===0 && j===n-1)){
+      diagStr += `<line x1="${pts[i].x.toFixed(1)}" y1="${pts[i].y.toFixed(1)}" x2="${pts[j].x.toFixed(1)}" y2="${pts[j].y.toFixed(1)}" stroke="var(--orange)" stroke-width="1.5" opacity="0.75"/>`;
+    }}
+  }
+  const dots = pts.map((p,i)=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${highlightVertex===i?7:5}" fill="${highlightVertex===i?'var(--red)':'currentColor'}"/>`).join('');
+  return `<svg viewBox="0 0 300 300">
+    <polygon points="${pointsStr}" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    ${diagStr}
+    ${dots}
+  </svg>`;
+}
+
+const POLY_NAMES = {3:'Triângulo',4:'Quadrilátero',5:'Pentágono',6:'Hexágono',7:'Heptágono',8:'Octógono',9:'Eneágono',10:'Decágono',12:'Dodecágono'};
+
+/* ============================= LESSON: ANGLE INTRO ============================= */
+function classifyAngle(a){
+  if(a < 90) return 'agudo';
+  if(a === 90) return 'reto';
+  if(a < 180) return 'obtuso';
+  return 'raso';
+}
+
+function lessonAngleIntro(container, onFinish){
+  let angle = 60;
+  const wrap = el('div');
+  wrap.appendChild(el('p', null, 'Imagina duas linhas retas que começam no mesmo pontinho. O espaço aberto entre elas, tipo uma "boca" se abrindo, é o que chamamos de <b>ângulo</b>.'));
+  wrap.appendChild(el('p', null, 'A gente mede esse espaço em <b>graus (°)</b>. Quanto mais aberta a boca, maior o número de graus.'));
+
+  const stage = el('div','stage');
+  stage.innerHTML = `<svg viewBox="0 0 300 300" id="angSvg">
+    <line x1="150" y1="220" x2="270" y2="220" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/>
+    <line id="rayMove" x1="150" y1="220" x2="270" y2="220" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/>
+    <path id="arcPath" fill="none" stroke="var(--yellow)" stroke-width="3"/>
+    <circle cx="150" cy="220" r="5" fill="currentColor"/>
+    <circle id="handle" cx="270" cy="220" r="12" fill="var(--yellow)" class="handle"/>
+    <text id="angText" x="150" y="200" text-anchor="middle" font-weight="800" font-size="20" fill="var(--yellow)">60°</text>
+  </svg>`;
+  wrap.appendChild(stage);
+  wrap.appendChild(el('p', null, '👉 <b>Arraste o ponto amarelo</b> para abrir e fechar o ângulo.'));
+
+  const feedback = el('div');
+  wrap.appendChild(feedback);
+
+  const goalWrap = el('div','card');
+  goalWrap.innerHTML = `<b>Desafio:</b> arraste até conseguir um ângulo de <span class="mono">90°</span> (com uma margem de erro pequena).`;
+  const goalStatus = el('div', null, '');
+  goalWrap.appendChild(goalStatus);
+  wrap.appendChild(goalWrap);
+
+  const nextBtn = el('button','btn btn-primary btn-block hidden', 'Consegui! Continuar →');
+  wrap.appendChild(nextBtn);
+
+  container.innerHTML=''; container.appendChild(wrap);
+
+  const svg = stage.querySelector('#angSvg');
+  const handle = stage.querySelector('#handle');
+  const ray = stage.querySelector('#rayMove');
+  const arc = stage.querySelector('#arcPath');
+  const txt = stage.querySelector('#angText');
+  let achieved = false;
+
+  function draw(){
+    const p = polar(150,220,120, angle);
+    ray.setAttribute('x2', p.x); ray.setAttribute('y2', p.y);
+    handle.setAttribute('cx', p.x); handle.setAttribute('cy', p.y);
+    arc.setAttribute('d', arcPath(150,220,40,0,angle));
+    const tp = polar(150,220,60, angle/2);
+    txt.setAttribute('x', tp.x); txt.setAttribute('y', tp.y);
+    txt.textContent = Math.round(angle)+'°';
+    if(!achieved && Math.abs(angle-90) <= 4){
+      achieved = true;
+      goalStatus.innerHTML = '<span style="color:var(--green);font-weight:700">✅ Isso! Você criou um ângulo reto (90°).</span>';
+      nextBtn.classList.remove('hidden');
+      addXP(15,'ang-intro');
+    }
+  }
+  draw();
+
+  let dragging=false;
+  function onMove(evt){
+    if(!dragging) return;
+    const p = svgPointFromEvent(svg, evt.touches? evt.touches[0]:evt);
+    let a = Math.atan2(-(p.y-220), p.x-150) * 180/Math.PI;
+    if(a < 0) a += 360;
+    angle = Math.max(3, Math.min(357, a));
+    draw();
+  }
+  handle.addEventListener('pointerdown', e=>{ dragging=true; handle.setPointerCapture(e.pointerId); });
+  handle.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', ()=>dragging=false);
+
+  nextBtn.onclick = ()=>onFinish();
+}
+
+/* ============================= LESSON: ANGLE TYPES ============================= */
+function angleTypeDemo(container, targetLabel, targetTest, onSuccess){
+  let angle = 20;
+  const stage = el('div','stage');
+  stage.innerHTML = `<svg viewBox="0 0 300 300">
+    <line x1="150" y1="220" x2="270" y2="220" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/>
+    <line id="rm" x1="150" y1="220" x2="270" y2="220" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/>
+    <path id="ap" fill="none" stroke="var(--yellow)" stroke-width="3"/>
+    <circle cx="150" cy="220" r="5" fill="currentColor"/>
+    <circle id="hd" cx="270" cy="220" r="12" fill="var(--yellow)" class="handle"/>
+    <text id="tx" x="150" y="200" text-anchor="middle" font-weight="800" font-size="20" fill="var(--yellow)">20°</text>
+  </svg>`;
+  container.appendChild(stage);
+  const status = el('div','card', `Arraste até criar um ângulo <b>${targetLabel}</b>.`);
+  container.appendChild(status);
+
+  const svg = stage.querySelector('svg');
+  const hd = stage.querySelector('#hd'), rm = stage.querySelector('#rm'), ap = stage.querySelector('#ap'), tx = stage.querySelector('#tx');
+  let done=false;
+  function draw(){
+    const p = polar(150,220,120, angle);
+    rm.setAttribute('x2', p.x); rm.setAttribute('y2', p.y);
+    hd.setAttribute('cx', p.x); hd.setAttribute('cy', p.y);
+    ap.setAttribute('d', arcPath(150,220,40,0,angle));
+    const tp = polar(150,220,60, angle/2);
+    tx.setAttribute('x', tp.x); tx.setAttribute('y', tp.y);
+    tx.textContent = Math.round(angle)+'°';
+    if(!done && targetTest(angle)){
+      done = true;
+      status.innerHTML = `<span style="color:var(--green);font-weight:700">✅ Perfeito, isso é um ângulo ${targetLabel}!</span>`;
+      onSuccess();
+    }
+  }
+  draw();
+  let dragging=false;
+  hd.addEventListener('pointerdown', e=>{ dragging=true; hd.setPointerCapture(e.pointerId); });
+  hd.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const p = svgPointFromEvent(svg, e);
+    let a = Math.atan2(-(p.y-220), p.x-150)*180/Math.PI;
+    if(a<0) a+=360;
+    angle = Math.max(3, Math.min(357, a));
+    draw();
+  });
+  window.addEventListener('pointerup', ()=>dragging=false);
+}
+
+function generateAngleTypeMC(){
+  const a = pick([rand(10,89), 90, rand(91,179), 180]);
+  const type = classifyAngle(a);
+  const names = {agudo:'Agudo', reto:'Reto', obtuso:'Obtuso', raso:'Raso'};
+  const options = shuffle(Object.values(names));
+  return {
+    topic:'ang-tipos', colorVar:'--blue',
+    prompt:`Um ângulo mede ${a}°. Como ele é classificado?`,
+    options,
+    correctIndex: options.indexOf(names[type]),
+    explanation: type==='agudo' ? `${a}° é menor que 90°, então é <b>agudo</b>.` : type==='reto' ? `${a}° é exatamente 90°, então é <b>reto</b>.` : type==='obtuso' ? `${a}° está entre 90° e 180°, então é <b>obtuso</b>.` : `${a}° é exatamente 180°, uma linha reta — por isso chamamos de <b>raso</b>.`,
+    xp:20
+  };
+}
+
+/* ============================= LESSON: TRIANGLE INTRO ============================= */
+function lessonTriangleIntro(container, onFinish){
+  let a=60,b=70;
+  const wrap = el('div');
+  wrap.appendChild(el('p',null,'Todo triângulo tem 3 lados e 3 ângulos. E tem uma regra mágica que <b>nunca</b> muda:'));
+  wrap.appendChild(el('div','card mono','ângulo 1 + ângulo 2 + ângulo 3 = 180°'));
+  wrap.appendChild(el('p',null,'Mexa nos dois primeiros ângulos e veja o terceiro se ajustar sozinho para a soma sempre fechar em 180°.'));
+  const stage = el('div','stage');
+  stage.style.setProperty('--topic-color','var(--green)');
+  stage.innerHTML = triangleSVG({top:'', bl:'', br:''});
+  wrap.appendChild(stage);
+  const controls = el('div','controls-row');
+  controls.innerHTML = `
+    <div><div class="slider-label"><span>Ângulo A (canto esquerdo)</span><span class="val" id="aVal">60°</span></div><input type="range" id="aSlider" min="10" max="150" value="60"></div>
+    <div><div class="slider-label"><span>Ângulo B (canto direito)</span><span class="val" id="bVal">70°</span></div><input type="range" id="bSlider" min="10" max="150" value="70"></div>`;
+  wrap.appendChild(controls);
+  const sumBox = el('div','card', '');
+  wrap.appendChild(sumBox);
+  const nextBtn = el('button','btn btn-primary btn-block','Entendi! Continuar →');
+  wrap.appendChild(nextBtn);
+  container.innerHTML=''; container.appendChild(wrap);
+
+  function draw(){
+    const c = 180-a-b;
+    stage.innerHTML = triangleSVG({top: c>0? c+'°':'—', bl:a+'°', br:b+'°', highlight: c<=0?'top':null});
+    document.getElementById('aVal').textContent=a+'°';
+    document.getElementById('bVal').textContent=b+'°';
+    if(c>0){
+      sumBox.innerHTML = `<span class="mono">${a}° + ${b}° + <b style="color:var(--green)">${c}°</b> = 180°</span> ✅`;
+    } else {
+      sumBox.innerHTML = `<span style="color:var(--red)">Esses dois ângulos já somam ${a+b}°, que é maior ou igual a 180°. Um triângulo assim não existe — diminua um pouco.</span>`;
+    }
+  }
+  draw();
+  document.getElementById('aSlider').addEventListener('input', e=>{ a=+e.target.value; draw(); });
+  document.getElementById('bSlider').addEventListener('input', e=>{ b=+e.target.value; draw(); });
+  nextBtn.onclick = ()=>onFinish();
+}
+
+function generateTriIntroExercise(){
+  const a = rand(30,110), b = rand(20, 170-a-5);
+  const c = 180-a-b;
+  return {
+    topic:'tri-intro', colorVar:'--green',
+    prompt:`Um triângulo tem ângulos de ${a}° e ${b}°. Quanto vale o terceiro ângulo?`,
+    answer:c, tolerance:0.6, xp:20,
+    svg: triangleSVG({top:'x', bl:a+'°', br:b+'°', highlight:'top'}),
+    steps:[`${a} + ${b} + x = 180`, `${a+b} + x = 180`, `x = 180 − ${a+b}`, `x = ${c}°`]
+  };
+}
+
+/* ============================= LESSON: DISCOVER X ============================= */
+function generateDiscoverX(level){
+  if(level===1){
+    const a = rand(40,90), b = rand(30, 130-a);
+    const x = 180-a-b;
+    return {topic:'descobrir-x', colorVar:'--green', prompt:'Quanto vale x nesse triângulo?', answer:x, tolerance:0.6,
+      svg: triangleSVG({top:'x', bl:a+'°', br:b+'°', highlight:'top'}),
+      steps:[`${a} + ${b} + x = 180`, `${a+b} + x = 180`, `x = 180 − ${a+b}`, `x = ${x}°`], xp:30};
+  }
+  if(level===2){
+    const x = rand(20,80), b = rand(20,150-x);
+    const a = 180-x-b;
+    return {topic:'descobrir-x', colorVar:'--green', prompt:'Dessa vez, x está em um canto diferente. Ainda assim, a soma dos 3 ângulos é 180°. Quanto vale x?', answer:x, tolerance:0.6,
+      svg: triangleSVG({top:b+'°', bl:'x', br:a+'°', highlight:'bl'}),
+      steps:[`x + ${a} + ${b} = 180`, `x + ${a+b} = 180`, `x = 180 − ${a+b}`, `x = ${x}°`], xp:35};
+  }
+  const x = rand(15,70);
+  const rightAngle = 90;
+  const b = 180-x-rightAngle;
+  return {topic:'descobrir-x', colorVar:'--green', prompt:'Esse triângulo já tem um ângulo reto marcado. Quanto vale x?', answer:x, tolerance:0.6,
+    svg: triangleSVG({top:'90°', bl:'x', br:b+'°', highlight:'bl'}),
+    steps:[`x + 90 + ${b} = 180`, `x + ${90+b} = 180`, `x = 180 − ${90+b}`, `x = ${x}°`], xp:40};
+}
+
+/* ============================= LESSON: TRIANGLE CLASSIFICATION ============================= */
+function generateClassifSides(){
+  const kind = pick(['equilatero','isosceles','escaleno']);
+  let a,b,c;
+  if(kind==='equilatero'){ a=b=c=rand(4,9); }
+  else if(kind==='isosceles'){ a=b=rand(4,9); do{c=rand(3,9);}while(c===a); }
+  else { a=rand(3,6); b=rand(7,9); c=rand(10,12); }
+  const names={equilatero:'Equilátero (3 lados iguais)', isosceles:'Isósceles (2 lados iguais)', escaleno:'Escaleno (3 lados diferentes)'};
+  const options = shuffle(Object.values(names));
+  return {
+    topic:'tri-classif', colorVar:'--green',
+    prompt:`Um triângulo tem lados de ${a} cm, ${b} cm e ${c} cm. Como ele é classificado quanto aos lados?`,
+    options, correctIndex: options.indexOf(names[kind]),
+    explanation: kind==='equilatero' ? 'Os três lados têm a mesma medida, então é <b>equilátero</b>.' : kind==='isosceles' ? 'Dois lados têm a mesma medida, então é <b>isósceles</b>.' : 'Nenhum lado se repete, então é <b>escaleno</b>.',
+    xp:20
+  };
+}
+function generateClassifAngles(){
+  const kind = pick(['acutangulo','retangulo','obtusangulo']);
+  let a,b,c;
+  if(kind==='retangulo'){ a=90; b=rand(20,60); c=180-a-b; }
+  else if(kind==='obtusangulo'){ a=rand(100,140); const upper=Math.min(60, 179-a); b=rand(15, Math.max(15,upper)); c=180-a-b; }
+  else { a=rand(50,70); b=rand(50,70); c=180-a-b; if(c>=90){b-=(c-89); c=180-a-b;} }
+  const names={acutangulo:'Acutângulo (todos < 90°)', retangulo:'Retângulo (um = 90°)', obtusangulo:'Obtusângulo (um > 90°)'};
+  const options = shuffle(Object.values(names));
+  return {
+    topic:'tri-classif', colorVar:'--green',
+    prompt:`Um triângulo tem ângulos de ${a}°, ${b}° e ${c}°. Como ele é classificado quanto aos ângulos?`,
+    svg: triangleSVG({top:a+'°', bl:b+'°', br:c+'°'}),
+    options, correctIndex: options.indexOf(names[kind]),
+    explanation: kind==='retangulo' ? `Existe um ângulo de 90°, então: sempre que aparecer exatamente 90°, pense <b>TRIÂNGULO RETÂNGULO</b>.` : kind==='obtusangulo' ? `O ângulo de ${a}° é maior que 90°, então é <b>obtusângulo</b>.` : `Todos os ângulos são menores que 90°, então é <b>acutângulo</b>.`,
+    xp:25
+  };
+}
+
+/* ============================= LESSON: TRIANGLE INEQUALITY ============================= */
+function lessonInequality(container, onFinish){
+  let a=5,b=6,c=8;
+  const wrap = el('div');
+  wrap.appendChild(el('p',null,'Nem todo trio de lados forma um triângulo de verdade. Se dois lados juntos não "alcançarem" o terceiro, as pontas nunca se encontram.'));
+  wrap.appendChild(el('div','card mono','a + b > c   e   a + c > b   e   b + c > a'));
+  const stage = el('div','stage');
+  stage.style.setProperty('--topic-color','var(--green)');
+  wrap.appendChild(stage);
+  const controls = el('div','controls-row');
+  controls.innerHTML = `
+    <div><div class="slider-label"><span>Lado A</span><span class="val" id="aiVal">5</span></div><input type="range" id="aiS" min="1" max="14" value="5"></div>
+    <div><div class="slider-label"><span>Lado B</span><span class="val" id="biVal">6</span></div><input type="range" id="biS" min="1" max="14" value="6"></div>
+    <div><div class="slider-label"><span>Lado C</span><span class="val" id="ciVal">8</span></div><input type="range" id="ciS" min="1" max="14" value="8"></div>`;
+  wrap.appendChild(controls);
+  const verdict = el('div','card','');
+  wrap.appendChild(verdict);
+  const nextBtn = el('button','btn btn-primary btn-block','Entendi! Continuar →');
+  wrap.appendChild(nextBtn);
+  container.innerHTML=''; container.appendChild(wrap);
+
+  function tryBuildTriangle(a,b,c){
+    // place a on x-axis from (0,0) to (a,0); find point for c(from origin) and b(from a,0)
+    const x = (a*a + c*c - b*b) / (2*a);
+    const y2 = c*c - x*x;
+    if(y2 <= 0) return null;
+    return {x, y: Math.sqrt(y2)};
+  }
+  function draw(){
+    const ok = (a+b>c) && (a+c>b) && (b+c>a);
+    let svgContent;
+    if(ok){
+      const scale = 180 / Math.max(a,b,c,1);
+      const p = tryBuildTriangle(a*scale,b*scale,c*scale);
+      const O={x:60,y:230}, A={x:60+a*scale,y:230};
+      const P = p ? {x:O.x+p.x, y:230-p.y} : {x:150,y:60};
+      svgContent = `<svg viewBox="0 0 300 260">
+        <polygon points="${O.x},${O.y} ${A.x},${A.y} ${P.x.toFixed(1)},${P.y.toFixed(1)}" fill="var(--green-dim)" stroke="var(--green)" stroke-width="3" stroke-linejoin="round"/>
+        <text x="${(O.x+A.x)/2}" y="${O.y+20}" text-anchor="middle" font-size="13" font-weight="700">a=${a}</text>
+        <text x="${(A.x+P.x)/2+8}" y="${(A.y+P.y)/2}" text-anchor="middle" font-size="13" font-weight="700">b=${b}</text>
+        <text x="${(O.x+P.x)/2-10}" y="${(O.y+P.y)/2}" text-anchor="middle" font-size="13" font-weight="700">c=${c}</text>
+      </svg>`;
+      verdict.innerHTML = `<span style="color:var(--green);font-weight:700">✅ Triângulo possível!</span> ${a}+${b}=${a+b} > ${c}, e as outras combinações também passam.`;
+    } else {
+      svgContent = `<svg viewBox="0 0 300 120">
+        <line x1="30" y1="60" x2="${30+a*10}" y2="60" stroke="var(--blue)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="${30+a*10+4}" y1="60" x2="${30+a*10+4+b*10}" y2="60" stroke="var(--orange)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="30" y1="90" x2="${30+c*10}" y2="90" stroke="var(--red)" stroke-width="6" stroke-linecap="round"/>
+        <text x="150" y="30" text-anchor="middle" font-size="12" fill="var(--text-dim)">a + b (azul+laranja) vs c (vermelho)</text>
+      </svg>`;
+      let reason = a+b<=c ? `${a} + ${b} = ${a+b}, que não é maior que ${c}.` : a+c<=b ? `${a} + ${c} = ${a+c}, que não é maior que ${b}.` : `${b} + ${c} = ${b+c}, que não é maior que ${a}.`;
+      verdict.innerHTML = `<span style="color:var(--red);font-weight:700">❌ Triângulo impossível.</span> ${reason} Os dois lados menores nem conseguem alcançar o maior — as pontas nunca se encontram.`;
+    }
+    stage.innerHTML = svgContent;
+    document.getElementById('aiVal').textContent=a; document.getElementById('biVal').textContent=b; document.getElementById('ciVal').textContent=c;
+  }
+  draw();
+  document.getElementById('aiS').addEventListener('input', e=>{a=+e.target.value; draw();});
+  document.getElementById('biS').addEventListener('input', e=>{b=+e.target.value; draw();});
+  document.getElementById('ciS').addEventListener('input', e=>{c=+e.target.value; draw();});
+  nextBtn.onclick = ()=>onFinish();
+}
+
+function generateInequalityMC(){
+  const ok = Math.random()<0.5;
+  let a,b,c;
+  if(ok){ a=rand(3,7); b=rand(3,7); c=rand(Math.max(2,Math.abs(a-b)+1), a+b-1); if(c<1)c=1; }
+  else { a=rand(2,4); b=rand(2,4); c=a+b+rand(1,4); }
+  const options = ['Sim, forma um triângulo','Não, é impossível'];
+  const trueOk = (a+b>c)&&(a+c>b)&&(b+c>a);
+  return {
+    topic:'tri-desigualdade', colorVar:'--green',
+    prompt:`Lados de ${a} cm, ${b} cm e ${c} cm formam um triângulo?`,
+    options, correctIndex: trueOk?0:1,
+    explanation: trueOk ? `Sim! A soma dos dois menores é maior que o maior lado.` : `Não! Os dois lados menores juntos (${Math.min(a,b,c)+ (a+b+c-Math.max(a,b,c)-Math.min(a,b,c))}) não superam o maior lado (${Math.max(a,b,c)} cm) — as pontas não se encontram.`,
+    xp:20
+  };
+}
+
+/* ============================= LESSON: EXTERNAL ANGLE ============================= */
+function lessonExternal(container, onFinish){
+  let ext = 120;
+  const wrap = el('div');
+  wrap.appendChild(el('p',null,'Se você continuar andando por um lado do triângulo, ele forma uma "continuação" para fora — isso é o <b>ângulo externo</b>.'));
+  wrap.appendChild(el('p',null,'O ângulo interno e o externo, juntos, sempre formam uma linha reta:'));
+  wrap.appendChild(el('div','card mono','ângulo interno + ângulo externo = 180°'));
+  const stage = el('div','stage');
+  wrap.appendChild(stage);
+  const controls = el('div','controls-row');
+  controls.innerHTML = `<div><div class="slider-label"><span>Ângulo externo</span><span class="val" id="extVal">120°</span></div><input type="range" id="extS" min="20" max="170" value="120"></div>`;
+  wrap.appendChild(controls);
+  const box = el('div','card','');
+  wrap.appendChild(box);
+  const nextBtn = el('button','btn btn-primary btn-block','Entendi! Continuar →');
+  wrap.appendChild(nextBtn);
+  container.innerHTML=''; container.appendChild(wrap);
+
+  function draw(){
+    const interior = 180-ext;
+    stage.innerHTML = `<svg viewBox="0 0 300 220">
+      <polygon points="150,30 60,190 220,190" fill="none" stroke="currentColor" stroke-width="3"/>
+      <line x1="220" y1="190" x2="290" y2="190" stroke="var(--blue)" stroke-width="3" stroke-dasharray="5,4"/>
+      <path d="${arcPath(220,190,30,0,ext)}" fill="none" stroke="var(--yellow)" stroke-width="3"/>
+      <text x="250" y="175" font-size="14" font-weight="800" fill="var(--yellow)">${Math.round(ext)}°</text>
+      <text x="200" y="175" font-size="14" font-weight="800">${Math.round(interior)}°</text>
+    </svg>`;
+    box.innerHTML = `<span class="mono">180° − ${Math.round(ext)}° = <b style="color:var(--blue)">${Math.round(interior)}°</b></span> é o ângulo interno.`;
+    document.getElementById('extVal').textContent = Math.round(ext)+'°';
+  }
+  draw();
+  document.getElementById('extS').addEventListener('input', e=>{ ext=+e.target.value; draw(); });
+  nextBtn.onclick=()=>onFinish();
+}
+function generateExternalExercise(){
+  const interior = rand(20,150);
+  const ext = 180-interior;
+  const asInterior = Math.random()<0.5;
+  return {
+    topic:'ang-externo', colorVar:'--blue',
+    prompt: asInterior ? `O ângulo externo de um triângulo mede ${ext}°. Quanto mede o ângulo interno ao lado dele?` : `O ângulo interno de um triângulo mede ${interior}°. Quanto mede o ângulo externo ao lado dele?`,
+    answer: asInterior? interior: ext, tolerance:0.6, xp:25,
+    steps: asInterior? [`interno + ${ext} = 180`, `interno = 180 − ${ext}`, `interno = ${interior}°`] : [`${interior} + externo = 180`, `externo = 180 − ${interior}`, `externo = ${ext}°`]
+  };
+}
+
+/* ============================= LESSON: VERTICAL ANGLES ============================= */
+function lessonVertical(container, onFinish){
+  let t = 55;
+  const wrap = el('div');
+  wrap.appendChild(el('p',null,'Quando duas retas se cruzam, formam 4 ângulos. Os ângulos que ficam "de frente um pro outro" são chamados de <b>opostos pelo vértice</b>.'));
+  const stage = el('div','stage');
+  wrap.appendChild(stage);
+  const controls = el('div','controls-row');
+  controls.innerHTML = `<div><div class="slider-label"><span>Gire uma das retas</span><span class="val" id="vVal">55°</span></div><input type="range" id="vS" min="10" max="80" value="55"></div>`;
+  wrap.appendChild(controls);
+  const box = el('div','card','');
+  wrap.appendChild(box);
+  const nextBtn = el('button','btn btn-primary btn-block','Entendi! Continuar →');
+  wrap.appendChild(nextBtn);
+  container.innerHTML=''; container.appendChild(wrap);
+
+  function draw(){
+    const cx=150,cy=150,r=110;
+    const p1=polar(cx,cy,r,t), p2=polar(cx,cy,r,t+180), p3=polar(cx,cy,r,180-t), p4=polar(cx,cy,r,-t);
+    stage.innerHTML = `<svg viewBox="0 0 300 300">
+      <line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="var(--blue)" stroke-width="3"/>
+      <line x1="${p3.x}" y1="${p3.y}" x2="${p4.x}" y2="${p4.y}" stroke="var(--purple)" stroke-width="3"/>
+      <path d="${arcPath(cx,cy,34,0,t)}" fill="none" stroke="var(--yellow)" stroke-width="3"/>
+      <path d="${arcPath(cx,cy,34,180,180+t)}" fill="none" stroke="var(--yellow)" stroke-width="3"/>
+      <path d="${arcPath(cx,cy,34,t,180)}" fill="none" stroke="var(--green)" stroke-width="3"/>
+      <path d="${arcPath(cx,cy,34,180+t,360)}" fill="none" stroke="var(--green)" stroke-width="3"/>
+      <circle cx="${cx}" cy="${cy}" r="4" fill="currentColor"/>
+      <text x="${cx+50}" y="${cy-10}" font-size="14" font-weight="800" fill="var(--yellow)">${t}°</text>
+      <text x="${cx-70}" y="${cy+18}" font-size="14" font-weight="800" fill="var(--yellow)">${t}°</text>
+      <text x="${cx-60}" y="${cy-40}" font-size="13" font-weight="800" fill="var(--green)">${180-t}°</text>
+      <text x="${cx+40}" y="${cy+60}" font-size="13" font-weight="800" fill="var(--green)">${180-t}°</text>
+    </svg>`;
+    box.innerHTML = `Os dois ângulos <b style="color:var(--yellow)">amarelos</b> são opostos pelo vértice: os dois medem <b>${t}°</b>. Os dois <b style="color:var(--green)">verdes</b> também são opostos entre si: os dois medem <b>${180-t}°</b>.`;
+    document.getElementById('vVal').textContent=t+'°';
+  }
+  draw();
+  document.getElementById('vS').addEventListener('input', e=>{ t=+e.target.value; draw(); });
+  nextBtn.onclick=()=>onFinish();
+}
+function generateVerticalExercise(){
+  const t = rand(15,85);
+  const askVertical = Math.random()<0.6;
+  return {
+    topic:'ang-opv', colorVar:'--blue',
+    prompt: askVertical ? `Duas retas se cruzam. Um dos ângulos mede ${t}°. Quanto mede o ângulo oposto pelo vértice a ele?` : `Duas retas se cruzam. Um dos ângulos mede ${t}°. Quanto mede o ângulo vizinho (adjacente) a ele?`,
+    answer: askVertical? t : 180-t, tolerance:0.6, xp:25,
+    steps: askVertical? [`Ângulos opostos pelo vértice são sempre iguais.`, `resposta = ${t}°`] : [`ângulo + vizinho = 180 (formam uma reta)`, `${t} + vizinho = 180`, `vizinho = ${180-t}°`]
+  };
+}
+
+/* ============================= LESSON: PARALLEL LINES ============================= */
+function lessonParallel(container, onFinish){
+  let theta = 55;
+  const wrap = el('div');
+  wrap.appendChild(el('p',null,'Duas retas paralelas nunca se encontram. Quando uma terceira reta (a <b>transversal</b>) corta as duas, aparecem 8 ângulos — mas só existem dois valores diferentes entre eles.'));
+  const stage = el('div','stage');
+  wrap.appendChild(stage);
+  const controls = el('div','controls-row');
+  controls.innerHTML = `<div><div class="slider-label"><span>Incline a transversal</span><span class="val" id="pVal">55°</span></div><input type="range" id="pS" min="25" max="80" value="55"></div>`;
+  wrap.appendChild(controls);
+  wrap.appendChild(el('div','grid-2',`
+    <div class="type-card"><b>Correspondentes</b><br><span style="color:var(--text-dim);font-size:.85rem">mesma posição nos dois cruzamentos → <b>iguais</b></span></div>
+    <div class="type-card"><b>Alternos internos</b><br><span style="color:var(--text-dim);font-size:.85rem">lados opostos, dentro das paralelas → <b>iguais</b></span></div>
+    <div class="type-card"><b>Colaterais internos</b><br><span style="color:var(--text-dim);font-size:.85rem">mesmo lado, dentro das paralelas → <b>somam 180°</b></span></div>
+    <div class="type-card"><b>Opostos pelo vértice</b><br><span style="color:var(--text-dim);font-size:.85rem">em cada cruzamento → <b>iguais</b></span></div>
+  `));
+  const nextBtn = el('button','btn btn-primary btn-block','Entendi! Continuar →');
+  wrap.appendChild(nextBtn);
+  container.innerHTML=''; container.appendChild(wrap);
+
+  function draw(){
+    const y1=90, y2=210, xMid=150;
+    const dx = 100/Math.tan(theta*Math.PI/180);
+    const x1top = xMid-dx/2*(y2-y1)/ (y2-y1); // simplify below with explicit calc
+    const topX = xMid - (y2-y1)/2/Math.tan(theta*Math.PI/180);
+    const botX = xMid + (y2-y1)/2/Math.tan(theta*Math.PI/180);
+    stage.innerHTML = `<svg viewBox="0 0 300 300">
+      <line x1="20" y1="${y1}" x2="280" y2="${y1}" stroke="currentColor" stroke-width="3"/>
+      <line x1="20" y1="${y2}" x2="280" y2="${y2}" stroke="currentColor" stroke-width="3"/>
+      <line x1="${topX-40}" y1="40" x2="${botX+40}" y2="260" stroke="var(--purple)" stroke-width="3"/>
+      <text x="270" y="${y1-8}" font-size="11" fill="var(--text-dim)">reta 1</text>
+      <text x="270" y="${y2-8}" font-size="11" fill="var(--text-dim)">reta 2</text>
+      <text x="${topX+10}" y="${y1-14}" font-size="13" font-weight="800" fill="var(--yellow)">θ=${theta}°</text>
+      <text x="${topX-10}" y="${y1+22}" font-size="12" fill="var(--blue)">${180-theta}°</text>
+      <text x="${botX+10}" y="${y2-6}" font-size="12" fill="var(--green)">${180-theta}°</text>
+      <text x="${botX-30}" y="${y2+20}" font-size="12" fill="var(--green)">${theta}°</text>
+    </svg>`;
+    document.getElementById('pVal').textContent = theta+'°';
+  }
+  draw();
+  document.getElementById('pS').addEventListener('input', e=>{ theta=+e.target.value; draw(); });
+  nextBtn.onclick=()=>onFinish();
+}
+function generateParallelExercise(){
+  const theta = rand(30,80);
+  const kind = pick(['correspondente','alterno','colateral']);
+  let answer, expl;
+  if(kind==='correspondente'){ answer=theta; expl=`Ângulos correspondentes ocupam a mesma posição nos dois cruzamentos, então são <b>iguais</b>: ${theta}°.`; }
+  else if(kind==='alterno'){ answer=theta; expl=`Ângulos alternos internos ficam em lados opostos da transversal, dentro das paralelas, e são <b>iguais</b>: ${theta}°.`; }
+  else { answer=180-theta; expl=`Ângulos colaterais internos ficam do mesmo lado, dentro das paralelas, e <b>somam 180°</b>: 180° − ${theta}° = ${180-theta}°.`; }
+  const options = shuffle([theta, 180-theta, theta+ (Math.random()<0.5?5:-5)].map(v=>v+'°').filter((v,i,a)=>a.indexOf(v)===i));
+  while(options.length<3) options.push((rand(10,170))+'°');
+  const correctIndex = options.indexOf(answer+'°');
+  return {
+    topic:'paralelas', colorVar:'--purple',
+    prompt:`Duas retas paralelas são cortadas por uma transversal. Um ângulo mede ${theta}°. Qual é o valor de um ângulo ${kind==='correspondente'?'correspondente':kind==='alterno'?'alterno interno':'colateral interno'} a ele?`,
+    options, correctIndex: correctIndex>=0?correctIndex:0,
+    explanation: expl, xp:30
+  };
+}
+
+/* ============================= LESSON: POLYGONS INTRO ============================= */
+function lessonPolygonsIntro(container, onFinish){
+  const wrap = el('div');
+  wrap.appendChild(el('p',null,'Polígono é qualquer forma fechada feita só de linhas retas. O nome muda de acordo com o número de lados:'));
+  const gallery = el('div','grid-2');
+  [3,4,5,6,7,8].forEach(n=>{
+    const c = el('div','type-card');
+    c.innerHTML = `<div class="big">${n} lados</div><div style="margin:8px 0">${polygonSVG(n)}</div><div>${POLY_NAMES[n]}</div>`;
+    gallery.appendChild(c);
+  });
+  wrap.appendChild(gallery);
+  const nextBtn = el('button','btn btn-primary btn-block','Continuar →');
+  nextBtn.style.marginTop='16px';
+  wrap.appendChild(nextBtn);
+  container.innerHTML=''; container.appendChild(wrap);
+  nextBtn.onclick=()=>onFinish();
+}
+function generatePolygonNameExercise(){
+  const n = pick([3,4,5,6,7,8]);
+  const correctName = POLY_NAMES[n];
+  const options = shuffle([correctName, ...shuffle(Object.values(POLY_NAMES).filter(x=>x!==correctName)).slice(0,2)]);
+  return {
+    topic:'poligonos', colorVar:'--purple',
+    prompt:`Como se chama um polígono de ${n} lados?`,
+    svg: `<div>${polygonSVG(n)}</div>`,
+    options, correctIndex: options.indexOf(correctName),
+    explanation: `Um polígono de ${n} lados é um <b>${correctName}</b>.`, xp:15
+  };
+}
+
+/* ============================= LESSON: INTERIOR SUM ============================= */
+function lessonInteriorSum(container, onFinish){
+  let n=5;
+  const wrap = el('div');
+  wrap.appendChild(el('p',null,'Repare: se você desenhar todas as diagonais saindo de <b>um único vértice</b>, o polígono se quebra em triângulos.'));
+  const stage = el('div','stage');
+  wrap.appendChild(stage);
+  const controls = el('div','controls-row');
+  controls.innerHTML = `<div><div class="slider-label"><span>Número de lados (n)</span><span class="val" id="nVal">5</span></div><input type="range" id="nS" min="3" max="10" value="5"></div>`;
+  wrap.appendChild(controls);
+  const box = el('div','card mono','');
+  wrap.appendChild(box);
+  const whyBtn = el('button','why-toggle','🤔 De onde vem essa fórmula?');
+  const whyBox = el('div','why-box','Cada triângulo tem 180° de soma interna. Um polígono de n lados sempre se divide em exatamente (n − 2) triângulos, saindo de um só vértice. Por isso, S = (n − 2) × 180°.');
+  wrap.appendChild(whyBtn); wrap.appendChild(whyBox);
+  whyBtn.onclick = ()=>whyBox.classList.toggle('open');
+  const nextBtn = el('button','btn btn-primary btn-block','Continuar →');
+  nextBtn.style.marginTop='10px';
+  wrap.appendChild(nextBtn);
+  container.innerHTML=''; container.appendChild(wrap);
+
+  function draw(){
+    const pts = polygonPoints(n);
+    let tri='';
+    for(let i=1;i<n-1;i++){
+      tri += `<line x1="${pts[0].x.toFixed(1)}" y1="${pts[0].y.toFixed(1)}" x2="${pts[i].x.toFixed(1)}" y2="${pts[i].y.toFixed(1)}" stroke="var(--purple)" stroke-width="1.5" opacity="0.8"/>`;
+    }
+    const pointsStr = pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    stage.innerHTML = `<svg viewBox="0 0 300 300"><polygon points="${pointsStr}" fill="none" stroke="currentColor" stroke-width="3"/>${tri}</svg>`;
+    const S = (n-2)*180;
+    box.innerHTML = `S = (${n} − 2) × 180° = ${n-2} × 180° = <b style="color:var(--purple)">${S}°</b><br><span style="font-size:.8rem;color:var(--text-dim)">(${n-2} triângulos formados)</span>`;
+    document.getElementById('nVal').textContent = n;
+  }
+  draw();
+  document.getElementById('nS').addEventListener('input', e=>{ n=+e.target.value; draw(); });
+  nextBtn.onclick=()=>onFinish();
+}
+function generateInteriorSumExercise(){
+  const n = pick([4,5,6,7,8,9,10]);
+  const S = (n-2)*180;
+  return {
+    topic:'soma-internos', colorVar:'--purple',
+    prompt:`Qual é a soma dos ângulos internos de um ${POLY_NAMES[n]||('polígono de '+n+' lados')} (${n} lados)?`,
+    answer:S, tolerance:1, xp:30,
+    svg: `<div>${polygonSVG(n)}</div>`,
+    steps:[`S = (n − 2) × 180°`, `S = (${n} − 2) × 180°`, `S = ${n-2} × 180°`, `S = ${S}°`]
+  };
+}
+
+/* ============================= LESSON: REGULAR POLYGONS ============================= */
+function lessonRegular(container, onFinish){
+  let n=5;
+  const wrap = el('div');
+  wrap.appendChild(el('p',null,'"Regular" quer dizer: todos os lados iguais <b>e</b> todos os ângulos iguais. Já sabemos a soma total — agora é só dividir igualmente entre os n cantos.'));
+  const stage = el('div','stage');
+  wrap.appendChild(stage);
+  const controls = el('div','controls-row');
+  controls.innerHTML = `<div><div class="slider-label"><span>Número de lados (n)</span><span class="val" id="rnVal">5</span></div><input type="range" id="rnS" min="3" max="12" value="5"></div>`;
+  wrap.appendChild(controls);
+  const box = el('div','card mono','');
+  wrap.appendChild(box);
+  const nextBtn = el('button','btn btn-primary btn-block','Continuar →');
+  wrap.appendChild(nextBtn);
+  container.innerHTML=''; container.appendChild(wrap);
+  function draw(){
+    stage.innerHTML = polygonSVG(n);
+    const S=(n-2)*180, a=(S/n);
+    box.innerHTML = `A = ((${n} − 2) × 180°) ÷ ${n} = ${S}° ÷ ${n} = <b style="color:var(--purple)">${a.toFixed(1)}°</b> por ângulo`;
+    document.getElementById('rnVal').textContent=n;
+  }
+  draw();
+  document.getElementById('rnS').addEventListener('input', e=>{ n=+e.target.value; draw(); });
+  nextBtn.onclick=()=>onFinish();
+}
+function generateRegularExercise(){
+  const n = pick([3,4,5,6,8,9,10,12]);
+  const S=(n-2)*180, a=S/n;
+  return {
+    topic:'poligono-regular', colorVar:'--purple',
+    prompt:`Em um ${POLY_NAMES[n]||('polígono regular de '+n+' lados')} regular, quanto mede cada ângulo interno?`,
+    answer: Math.round(a*10)/10, tolerance: 0.6, xp:30,
+    svg:`<div>${polygonSVG(n)}</div>`,
+    steps:[`S = (${n}−2) × 180° = ${S}°`, `cada ângulo = ${S}° ÷ ${n}`, `cada ângulo = ${(Math.round(a*10)/10)}°`]
+  };
+}
+
+/* ============================= LESSON: DIAGONALS ============================= */
+function lessonDiagonals(container, onFinish){
+  let n=4;
+  const wrap = el('div');
+  wrap.appendChild(el('p',null,'Diagonal é a linha que liga dois vértices <b>não vizinhos</b>. Aumente o número de lados e observe quantas diagonais aparecem.'));
+  const stage = el('div','stage');
+  wrap.appendChild(stage);
+  const controls = el('div','controls-row');
+  controls.innerHTML = `<div><div class="slider-label"><span>Número de lados (n)</span><span class="val" id="dnVal">4</span></div><input type="range" id="dnS" min="3" max="10" value="4"></div>`;
+  wrap.appendChild(controls);
+  const box = el('div','card mono','');
+  wrap.appendChild(box);
+  const nextBtn = el('button','btn btn-primary btn-block','Continuar →');
+  wrap.appendChild(nextBtn);
+  container.innerHTML=''; container.appendChild(wrap);
+  function draw(){
+    stage.innerHTML = polygonSVG(n, {diagonals:true});
+    const d = n*(n-3)/2;
+    box.innerHTML = `d = ${n}(${n} − 3) ÷ 2 = ${n}×${n-3} ÷ 2 = <b style="color:var(--orange)">${d}</b> diagonais`;
+    document.getElementById('dnVal').textContent=n;
+  }
+  draw();
+  document.getElementById('dnS').addEventListener('input', e=>{ n=+e.target.value; draw(); });
+  nextBtn.onclick=()=>onFinish();
+}
+function generateDiagonalsExercise(forceOctagon){
+  const n = forceOctagon ? 8 : pick([4,5,6,7,8,9]);
+  const d = n*(n-3)/2;
+  return {
+    topic:'diagonais', colorVar:'--orange',
+    prompt: forceOctagon ? '🐒 Desafio do Octógono: quantas diagonais tem um octógono?' : `Quantas diagonais tem um ${POLY_NAMES[n]||('polígono de '+n+' lados')} (${n} lados)?`,
+    answer:d, tolerance:0.4, xp: forceOctagon?50:30,
+    svg:`<div>${polygonSVG(n,{diagonals:true})}</div>`,
+    steps:[`d = n(n − 3) / 2`, `d = ${n}(${n} − 3) / 2`, `d = ${n} × ${n-3} / 2`, `d = ${n*(n-3)} / 2`, `d = ${d}`]
+  };
+}
+
+/* ============================= LESSON REGISTRY ============================= */
+const LESSON_INTRO_TEXT = {
+  'ang-intro': 'O ponto de partida de toda a geometria: entender o que é um ângulo.',
+  'ang-tipos': 'Nem todo ângulo é igual — cada um tem um nome dependendo do quanto abre.',
+  'tri-intro': 'A regra mais importante dos triângulos: a soma sempre dá 180°.',
+  'descobrir-x': 'Use a regra dos 180° para encontrar ângulos escondidos.',
+  'tri-classif': 'Todo triângulo pode ser classificado de duas formas ao mesmo tempo.',
+  'tri-desigualdade': 'Descubra quando três lados conseguem formar um triângulo de verdade.',
+  'ang-externo': 'O que acontece quando um lado do triângulo continua para fora.',
+  'ang-opv': 'Quando duas retas se cruzam, nascem pares de ângulos iguais.',
+  'paralelas': 'O clássico das provas: paralelas cortadas por uma transversal.',
+  'poligonos': 'Conheça as formas fechadas e seus nomes.',
+  'soma-internos': 'Uma fórmula que funciona para qualquer polígono.',
+  'poligono-regular': 'Quando um polígono é perfeitamente simétrico.',
+  'diagonais': 'Contando as linhas escondidas dentro de um polígono.'
+};
+
+const MACETES = {
+  'ang-intro': 'Volta completa → 360°',
+  'ang-tipos': 'Reto = 90° exatos',
+  'tri-intro': 'Triângulo → soma sempre 180°',
+  'descobrir-x': '180 − conhecidos = x',
+  'tri-classif': '90° no triângulo → retângulo',
+  'tri-desigualdade': 'menor + menor > maior',
+  'ang-externo': 'interno + externo = 180°',
+  'ang-opv': 'opostos pelo vértice → iguais',
+  'paralelas': 'correspondentes e alternos → iguais; colaterais → 180°',
+  'poligonos': 'nome = número de lados',
+  'soma-internos': 'S = (n − 2) × 180°',
+  'poligono-regular': 'ângulo = S ÷ n',
+  'diagonais': 'd = n(n − 3) / 2'
+};
+
+function demoRenderer(topicId){
+  return {
+    'ang-intro': lessonAngleIntro,
+    'tri-intro': lessonTriangleIntro,
+    'tri-desigualdade': lessonInequality,
+    'ang-externo': lessonExternal,
+    'ang-opv': lessonVertical,
+    'paralelas': lessonParallel,
+    'poligonos': lessonPolygonsIntro,
+    'soma-internos': lessonInteriorSum,
+    'poligono-regular': lessonRegular,
+    'diagonais': lessonDiagonals
+  }[topicId];
+}
+
+function exerciseSetFor(topicId){
+  switch(topicId){
+    case 'ang-intro':
+      return [
+        {type:'mc', gen:()=>{ const a=rand(10,89), b=rand(91,175); const options=shuffle([`${a}°`,`${b}°`]); return {topic:'ang-intro',colorVar:'--blue',prompt:`Qual desses ângulos é maior?`, options, correctIndex:options.indexOf(`${b}°`), explanation:`${b}° é maior que ${a}°, então esse é o ângulo mais "aberto".`, xp:15};} },
+        {type:'input', gen:()=>({topic:'ang-intro',colorVar:'--blue',prompt:'Uma volta completa (girar até voltar ao início) tem quantos graus?', answer:360, tolerance:0.5, xp:20, steps:['Uma volta completa é sempre 360°.']})}
+      ];
+    case 'ang-tipos':
+      return [ {type:'mc', gen:generateAngleTypeMC}, {type:'mc', gen:generateAngleTypeMC}, {type:'mc', gen:generateAngleTypeMC} ];
+    case 'tri-intro':
+      return [ {type:'input', gen:generateTriIntroExercise}, {type:'input', gen:generateTriIntroExercise} ];
+    case 'descobrir-x':
+      return [ {type:'input', gen:()=>generateDiscoverX(1)}, {type:'input', gen:()=>generateDiscoverX(2)}, {type:'input', gen:()=>generateDiscoverX(3)} ];
+    case 'tri-classif':
+      return [ {type:'mc', gen:generateClassifSides}, {type:'mc', gen:generateClassifAngles}, {type:'mc', gen:generateClassifAngles} ];
+    case 'tri-desigualdade':
+      return [ {type:'mc', gen:generateInequalityMC}, {type:'mc', gen:generateInequalityMC} ];
+    case 'ang-externo':
+      return [ {type:'input', gen:generateExternalExercise}, {type:'input', gen:generateExternalExercise} ];
+    case 'ang-opv':
+      return [ {type:'input', gen:generateVerticalExercise}, {type:'input', gen:generateVerticalExercise} ];
+    case 'paralelas':
+      return [ {type:'mc', gen:generateParallelExercise}, {type:'mc', gen:generateParallelExercise}, {type:'mc', gen:generateParallelExercise} ];
+    case 'poligonos':
+      return [ {type:'mc', gen:generatePolygonNameExercise}, {type:'mc', gen:generatePolygonNameExercise} ];
+    case 'soma-internos':
+      return [ {type:'input', gen:generateInteriorSumExercise}, {type:'input', gen:generateInteriorSumExercise} ];
+    case 'poligono-regular':
+      return [ {type:'input', gen:generateRegularExercise}, {type:'input', gen:generateRegularExercise} ];
+    case 'diagonais':
+      return [ {type:'input', gen:()=>generateDiagonalsExercise(false)}, {type:'input', gen:()=>generateDiagonalsExercise(true)} ];
+  }
+  return [];
+}
+
+/* ============================= ROUTER ============================= */
+let currentRoute = {name:'home'};
+function navigate(route){ currentRoute = route; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML='';
+  if(currentRoute.name==='home') renderHome(app);
+  else if(currentRoute.name==='lesson') renderLessonRoute(app, currentRoute.topicId);
+  else if(currentRoute.name==='lab') renderLab(app);
+  else if(currentRoute.name==='exam') renderExamHome(app);
+  else if(currentRoute.name==='boss') renderBoss(app);
+  renderTopbar();
+}
+
+function renderTopbar(){
+  document.getElementById('xpVal').textContent = state.xp;
+  document.getElementById('streakVal').textContent = state.streak;
+  const {progress} = computeLevel(state.xp);
+  document.getElementById('xpFill').style.width = progress+'%';
+}
+
+/* ---- HOME ---- */
+function renderHome(app){
+  const hero = el('div','hero');
+  hero.innerHTML = `<h1>🐒 Geometria Quest</h1><p>Aprenda ângulos, triângulos e polígonos brincando: arraste, responda, erre, entenda e tente de novo. Sem decoreba — só entendimento de verdade.</p>`;
+  const actions = el('div','hero-actions');
+  const btn1 = el('button','btn btn-primary btn-lg','▶️ Continuar aprendendo');
+  btn1.onclick = ()=>{ const first = TOPICS.find(t=>topicStatus(t.id)!=='done') || TOPICS[0]; navigate({name:'lesson', topicId:first.id}); };
+  const btn2 = el('button','btn btn-secondary btn-lg','🔬 Laboratório');
+  btn2.onclick = ()=>navigate({name:'lab'});
+  const btn3 = el('button','btn btn-secondary btn-lg','🔥 Prova amanhã');
+  btn3.onclick = ()=>navigate({name:'exam'});
+  actions.appendChild(btn1); actions.appendChild(btn2); actions.appendChild(btn3);
+  hero.appendChild(actions);
+  app.appendChild(hero);
+
+  const {cur, next, progress} = computeLevel(state.xp);
+  const lvl = el('div','level-card');
+  lvl.innerHTML = `<div class="level-badge">${cur.emoji}</div>
+    <div class="level-info"><div class="name">${cur.name}</div>
+    <div class="sub">${next? `${state.xp} / ${next.min} XP até "${next.name}"` : 'Nível máximo atingido! 👑'}</div>
+    <div class="xpbar-track" style="margin-top:6px"><div class="xpbar-fill" style="width:${progress}%"></div></div></div>`;
+  app.appendChild(lvl);
+
+  // review panel
+  const weak = Object.entries(state.wrong).filter(([id,c])=>c>0).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  if(weak.length){
+    const rp = el('div','review-panel');
+    rp.appendChild(el('div',null,'<b>🧠 Revisão inteligente</b> — esses assuntos ainda estão pegando você:'));
+    weak.forEach(([id,c])=>{
+      const t = topicById(id); if(!t) return;
+      const row = el('div','review-row');
+      row.innerHTML = `<span>${t.emoji} ${t.title} <span style="color:var(--text-dim);font-size:.8rem">(${c} erro${c>1?'s':''})</span></span>`;
+      const b = el('button','btn btn-ghost','Praticar mais');
+      b.onclick = ()=>navigate({name:'lesson', topicId:id, reviewOnly:true});
+      row.appendChild(b);
+      rp.appendChild(row);
+    });
+    app.appendChild(rp);
+  }
+
+  app.appendChild(el('div','section-title','🗺️ Mapa de aprendizado'));
+  const map = el('div','map');
+  TOPICS.forEach(t=>{
+    const status = topicStatus(t.id);
+    const node = el('button', `map-node ${status}`);
+    node.style.setProperty('--topic-color', cssVar(t.color));
+    node.disabled = status==='locked';
+    node.innerHTML = `<div class="node-dot">${status==='done' ? '✅' : t.emoji}</div>
+      <div><div class="node-title">${t.title}</div><div class="node-sub">${t.short}</div></div>
+      ${status==='done'?'<div class="node-check">✓</div>':''}`;
+    node.onclick = ()=>{ if(status!=='locked') navigate({name:'lesson', topicId:t.id}); };
+    map.appendChild(node);
+  });
+  const bossNode = el('button','map-node ' + (TOPICS.every(t=>state.completed[t.id]) ? 'available':'locked'));
+  bossNode.style.setProperty('--topic-color','var(--red)');
+  bossNode.disabled = !TOPICS.every(t=>state.completed[t.id]);
+  bossNode.innerHTML = `<div class="node-dot">👹</div><div><div class="node-title">Desafio final</div><div class="node-sub">O Demônio dos Ângulos te espera.</div></div>`;
+  bossNode.onclick = ()=>navigate({name:'boss'});
+  map.appendChild(bossNode);
+  app.appendChild(map);
+
+  const foot = el('footer','','Geometria Quest — feito para quem acha que odeia matemática (por enquanto). 🐒');
+  app.appendChild(foot);
+}
+
+/* ---- LESSON ROUTE ---- */
+function renderLessonRoute(app, topicId, reviewOnly){
+  const t = topicById(topicId);
+  if(!t){ navigate({name:'home'}); return; }
+  const top = el('div','lesson-top');
+  const back = el('button','backbtn','← Mapa');
+  back.onclick = ()=>navigate({name:'home'});
+  top.appendChild(back);
+  app.appendChild(top);
+
+  const tag = el('span','topic-tag', t.emoji+' '+t.title);
+  tag.style.setProperty('--topic-color', cssVar(t.color));
+  tag.style.background = `color-mix(in srgb, ${cssVar(t.color)} 20%, transparent)`;
+  tag.style.color = cssVar(t.color);
+  app.appendChild(tag);
+  app.appendChild(el('h2','lesson-h1', t.title));
+  app.appendChild(el('p',null, LESSON_INTRO_TEXT[t.id] || ''));
+
+  const exSet = exerciseSetFor(t.id);
+  const totalSteps = 1 + exSet.length + 1; // demo + exercises + macete/complete
+  const dots = el('div','progress-dots');
+  for(let i=0;i<totalSteps;i++) dots.appendChild(el('span'));
+  app.appendChild(dots);
+
+  const stepArea = el('div');
+  stepArea.style.setProperty('--topic-color', cssVar(t.color));
+  app.appendChild(stepArea);
+
+  let stepIdx=0;
+  function markDots(){ [...dots.children].forEach((d,i)=>d.classList.toggle('on', i<=stepIdx)); }
+
+  function goDemo(){
+    markDots();
+    const renderer = demoRenderer(t.id);
+    if(renderer){
+      renderer(stepArea, ()=>{ stepIdx++; goExercise(0); });
+    } else {
+      stepArea.innerHTML='';
+      const btn = el('button','btn btn-primary btn-block','Começar exercícios →');
+      stepArea.appendChild(btn);
+      btn.onclick = ()=>{ stepIdx++; goExercise(0); };
+    }
+  }
+
+  function goExercise(i){
+    markDots();
+    if(i >= exSet.length){ stepIdx = totalSteps-1; goComplete(); return; }
+    const spec = exSet[i];
+    const ex = spec.gen();
+    stepArea.innerHTML='';
+    const renderFn = spec.type==='mc' ? renderMCExercise : renderInputExercise;
+    renderFn(stepArea, ex, (correct)=>{ stepIdx++; goExercise(i+1); });
+  }
+
+  function goComplete(){
+    markDots();
+    stepArea.innerHTML='';
+    markComplete(t.id);
+    const wrap = el('div','complete-wrap');
+    wrap.innerHTML = `<div class="complete-emoji">🎉</div><h2>Fase concluída!</h2><div class="xp-gain">+100 XP</div>`;
+    stepArea.appendChild(wrap);
+    maceteCard(stepArea, MACETES[t.id], t.color);
+    addXP(100, t.id);
+    const nextTopic = TOPICS[topicIndex(t.id)+1];
+    const btnRow = el('div','hero-actions');
+    const b1 = el('button','btn btn-secondary','← Voltar ao mapa');
+    b1.onclick = ()=>navigate({name:'home'});
+    btnRow.appendChild(b1);
+    if(nextTopic){
+      const b2 = el('button','btn btn-primary','Próxima fase →');
+      b2.onclick = ()=>navigate({name:'lesson', topicId:nextTopic.id});
+      btnRow.appendChild(b2);
+    }
+    stepArea.appendChild(btnRow);
+  }
+
+  if(reviewOnly){
+    // quick practice mode: just cycle exercises for this topic, no demo/complete
+    stepArea.innerHTML='';
+    dots.classList.add('hidden');
+    app.insertBefore(el('div','bubble tip', `<span class="mascot">🐒</span><div><div class="label">Prática rápida</div><p>Vamos treinar mais um pouco de <b>${t.title}</b>.</p></div>`), stepArea);
+    let count=0;
+    function next(){
+      if(count>=4){ stepArea.innerHTML=''; const done=el('div','complete-wrap'); done.innerHTML='<div class="complete-emoji">💪</div><h3>Prática concluída!</h3>'; stepArea.appendChild(done);
+        const back2 = el('button','btn btn-primary btn-block','← Voltar ao mapa'); back2.onclick=()=>navigate({name:'home'}); stepArea.appendChild(back2);
+        return; }
+      const spec = pick(exSet.length?exSet:[{type:'mc',gen:generateAngleTypeMC}]);
+      const ex = spec.gen();
+      const renderFn = spec.type==='mc'?renderMCExercise:renderInputExercise;
+      renderFn(stepArea, ex, ()=>{ count++; next(); });
+    }
+    next();
+    return;
+  }
+
+  goDemo();
+}
+
+/* ---- LAB ---- */
+function renderLab(app){
+  const top = el('div','lesson-top');
+  const back = el('button','backbtn','← Mapa');
+  back.onclick = ()=>navigate({name:'home'});
+  top.appendChild(back);
+  app.appendChild(top);
+  app.appendChild(el('h2','lesson-h1','🔬 Laboratório de Geometria'));
+  app.appendChild(el('p',null,'Espaço livre para brincar. Mexa nos controles e observe o que muda — sem pontuação, sem certo ou errado.'));
+
+  // angle lab
+  const b1 = el('div','lab-block');
+  b1.innerHTML = `<h3>📐 Ângulos</h3>`;
+  const stage1 = el('div','stage'); stage1.style.setProperty('--topic-color','var(--blue)');
+  b1.appendChild(stage1);
+  const slider1 = el('div','controls-row'); slider1.innerHTML = `<div><div class="slider-label"><span>Ângulo</span><span class="val" id="labA">60°</span></div><input type="range" id="labAS" min="1" max="359" value="60"></div>`;
+  b1.appendChild(slider1);
+  app.appendChild(b1);
+  function drawLabAngle(a){
+    const p = polar(150,220,120,a);
+    stage1.innerHTML = `<svg viewBox="0 0 300 300">
+      <line x1="150" y1="220" x2="270" y2="220" stroke="var(--blue)" stroke-width="4"/>
+      <line x1="150" y1="220" x2="${p.x}" y2="${p.y}" stroke="var(--blue)" stroke-width="4"/>
+      <path d="${arcPath(150,220,40,0,a)}" fill="none" stroke="var(--yellow)" stroke-width="3"/>
+      <text x="150" y="195" text-anchor="middle" font-weight="800" fill="var(--yellow)">${a}° — ${classifyAngle(a)==='raso'&&a<180?'raso':classifyAngle(a)}</text>
+    </svg>`;
+  }
+  drawLabAngle(60);
+  document.addEventListener('input', function labListener(e){ if(e.target.id==='labAS'){ const a=+e.target.value; document.getElementById('labA').textContent=a+'°'; drawLabAngle(a);} });
+
+  // triangle lab
+  const b2 = el('div','lab-block'); b2.innerHTML = `<h3>🔺 Triângulos</h3>`;
+  const stage2 = el('div','stage'); stage2.style.setProperty('--topic-color','var(--green)');
+  b2.appendChild(stage2);
+  const slider2 = el('div','controls-row');
+  slider2.innerHTML = `<div><div class="slider-label"><span>Ângulo A</span><span class="val" id="labTA">60°</span></div><input type="range" id="labTAS" min="10" max="150" value="60"></div>
+  <div><div class="slider-label"><span>Ângulo B</span><span class="val" id="labTB">70°</span></div><input type="range" id="labTBS" min="10" max="150" value="70"></div>`;
+  b2.appendChild(slider2);
+  app.appendChild(b2);
+  function drawLabTri(a,b){ const c=180-a-b; stage2.innerHTML = triangleSVG({top:c>0?c+'°':'—', bl:a+'°', br:b+'°'}); }
+  drawLabTri(60,70);
+  document.addEventListener('input', function triListener(e){
+    if(e.target.id==='labTAS'||e.target.id==='labTBS'){
+      const a=+document.getElementById('labTAS').value, b=+document.getElementById('labTBS').value;
+      document.getElementById('labTA').textContent=a+'°'; document.getElementById('labTB').textContent=b+'°';
+      drawLabTri(a,b);
+    }
+  });
+
+  // polygon lab
+  const b3 = el('div','lab-block'); b3.innerHTML = `<h3>⬡ Polígonos e diagonais</h3>`;
+  const stage3 = el('div','stage'); stage3.style.setProperty('--topic-color','var(--purple)');
+  b3.appendChild(stage3);
+  const info3 = el('div','card mono','');
+  const slider3 = el('div','controls-row');
+  slider3.innerHTML = `<div><div class="slider-label"><span>Número de lados</span><span class="val" id="labN">5</span></div><input type="range" id="labNS" min="3" max="12" value="5"></div>`;
+  b3.appendChild(slider3); b3.appendChild(info3);
+  app.appendChild(b3);
+  function drawLabPoly(n){
+    stage3.innerHTML = polygonSVG(n,{diagonals:true});
+    const S=(n-2)*180, d=n*(n-3)/2, a=S/n;
+    info3.innerHTML = `S = ${S}° · cada ângulo (regular) = ${a.toFixed(1)}° · diagonais = ${d}`;
+    document.getElementById('labN').textContent=n;
+  }
+  drawLabPoly(5);
+  document.addEventListener('input', function polyListener(e){ if(e.target.id==='labNS'){ drawLabPoly(+e.target.value); } });
+}
+
+/* ---- EXAM MODE (Prova Amanhã) ---- */
+function renderExamHome(app){
+  const top = el('div','lesson-top');
+  const back = el('button','backbtn','← Mapa');
+  back.onclick = ()=>navigate({name:'home'});
+  top.appendChild(back);
+  app.appendChild(top);
+  app.appendChild(el('h2','lesson-h1','🔥 Sobrevivência para a prova'));
+  app.appendChild(el('p',null,'Revisão rápida de tudo, fase por fase, terminando com o chefão final.'));
+  const phases = [
+    {name:'Fase 1 — Ângulos', topics:['ang-intro','ang-tipos']},
+    {name:'Fase 2 — Triângulos', topics:['tri-intro','tri-classif']},
+    {name:'Fase 3 — Descobrir X', topics:['descobrir-x']},
+    {name:'Fase 4 — Paralelas', topics:['paralelas','ang-opv','ang-externo']},
+    {name:'Fase 5 — Polígonos', topics:['poligonos','soma-internos','poligono-regular']},
+    {name:'Fase 6 — Diagonais', topics:['diagonais','tri-desigualdade']}
+  ];
+  phases.forEach((ph,i)=>{
+    const c = el('div','card');
+    c.innerHTML = `<b>${ph.name}</b>`;
+    const btn = el('button','btn btn-secondary','Revisar');
+    btn.style.marginTop='10px';
+    btn.onclick = ()=>runQuickPhase(app, ph);
+    c.appendChild(document.createElement('br'));
+    c.appendChild(btn);
+    app.appendChild(c);
+  });
+  const bossBtn = el('button','btn btn-primary btn-lg btn-block','👹 Enfrentar o Demônio dos Ângulos');
+  bossBtn.style.marginTop='16px';
+  bossBtn.onclick = ()=>navigate({name:'boss'});
+  app.appendChild(bossBtn);
+}
+function runQuickPhase(app, phase){
+  app.innerHTML='';
+  const top = el('div','lesson-top');
+  const back = el('button','backbtn','← Fases');
+  back.onclick = ()=>navigate({name:'exam'});
+  top.appendChild(back);
+  app.appendChild(top);
+  app.appendChild(el('h2','lesson-h1', phase.name));
+  const area = el('div');
+  app.appendChild(area);
+  let count=0; const total=5;
+  function next(){
+    if(count>=total){ area.innerHTML=''; const d=el('div','complete-wrap'); d.innerHTML='<div class="complete-emoji">✅</div><h3>Revisão concluída!</h3>'; area.appendChild(d);
+      const b=el('button','btn btn-primary btn-block','← Voltar'); b.onclick=()=>navigate({name:'exam'}); area.appendChild(b); return; }
+    const topicId = pick(phase.topics);
+    const set = exerciseSetFor(topicId);
+    if(!set.length){ count++; next(); return; }
+    const spec = pick(set);
+    const ex = spec.gen();
+    const renderFn = spec.type==='mc'?renderMCExercise:renderInputExercise;
+    renderFn(area, ex, ()=>{ count++; next(); });
+  }
+  next();
+}
+
+/* ---- BOSS ---- */
+const BOSS_GENERATORS = {
+  1: [ // easy: 180-x style, simple subtraction
+    ()=>{ const x=rand(20,160); return {type:'input', ex:{topic:'boss',colorVar:'--red',prompt:`Quanto é 180 − ${x}?`, answer:180-x, tolerance:0.5, xp:10, steps:[`180 − ${x} = ${180-x}`]}};},
+    ()=>{ const x=rand(20,340); return {type:'input', ex:{topic:'boss',colorVar:'--red',prompt:`Quanto é 360 − ${x}?`, answer:360-x, tolerance:0.5, xp:10, steps:[`360 − ${x} = ${360-x}`]}};}
+  ],
+  2: [ // medium: discover x triangle, vertical angles
+    ()=>({type:'input', ex: Object.assign(generateDiscoverX(1), {topic:'boss',xp:15})}),
+    ()=>({type:'input', ex: Object.assign(generateVerticalExercise(), {topic:'boss',xp:15})})
+  ],
+  3: [ // hard: polygons
+    ()=>({type:'input', ex: Object.assign(generateInteriorSumExercise(), {topic:'boss',xp:20})}),
+    ()=>({type:'input', ex: Object.assign(generateRegularExercise(), {topic:'boss',xp:20})}),
+    ()=>({type:'input', ex: Object.assign(generateDiagonalsExercise(false), {topic:'boss',xp:20})})
+  ],
+  4: [ // very hard: parallels + transversal + x combos
+    ()=>({type:'mc', ex: Object.assign(generateParallelExercise(), {topic:'boss',xp:30})}),
+    ()=>({type:'input', ex: Object.assign(generateDiscoverX(3), {topic:'boss',xp:30})})
+  ]
+};
+function renderBoss(app){
+  const top = el('div','lesson-top');
+  const back = el('button','backbtn','← Mapa');
+  back.onclick = ()=>navigate({name:'home'});
+  top.appendChild(back);
+  app.appendChild(top);
+  app.appendChild(el('div','bubble tip','<span class="mascot">👹</span><div><div class="label">Desafio final</div><p><b>O DEMÔNIO DOS ÂNGULOS</b> apareceu. Você tem 3 vidas. As perguntas vão ficando mais difíceis. Boa sorte!</p></div>'));
+
+  const header = el('div','boss-header');
+  const lives = el('div','lives','❤️❤️❤️');
+  const idx = el('div','boss-q-index','Pergunta 1 / 20');
+  header.appendChild(lives); header.appendChild(idx);
+  app.appendChild(header);
+  const area = el('div');
+  app.appendChild(area);
+
+  let livesLeft=3, qn=0, correctCount=0;
+  const total=20;
+  function tierFor(n){ if(n<5) return 1; if(n<10) return 2; if(n<15) return 3; return 4; }
+
+  function nextQuestion(){
+    if(livesLeft<=0){ return endGame(false); }
+    if(qn>=total){ return endGame(true); }
+    idx.textContent = `Pergunta ${qn+1} / ${total}`;
+    lives.textContent = '❤️'.repeat(livesLeft) + '🖤'.repeat(3-livesLeft);
+    const tier = tierFor(qn);
+    const spec = pick(BOSS_GENERATORS[tier])();
+    const renderFn = spec.type==='mc'?renderMCExercise:renderInputExercise;
+    renderFn(area, spec.ex, (correct)=>{
+      if(correct) correctCount++; else livesLeft--;
+      qn++;
+      nextQuestion();
+    });
+  }
+  function endGame(finished){
+    area.innerHTML='';
+    header.classList.add('hidden');
+    const pct = Math.round((correctCount/total)*100);
+    let rating;
+    if(!finished) rating = 'O demônio te pegou dessa vez — mas cada erro te deixa mais forte. Tente de novo!';
+    else if(pct<=40) rating='Você ainda está começando.';
+    else if(pct<=60) rating='Você já está entendendo.';
+    else if(pct<=80) rating='Você está ficando perigoso.';
+    else if(pct<=95) rating='Quase mestre.';
+    else rating='👑 MESTRE DA GEOMETRIA';
+    const wrap = el('div','complete-wrap');
+    wrap.innerHTML = `<div class="complete-emoji">${finished? (pct>80?'👑':'🏆') : '💀'}</div><h2>${finished? 'Nota final: '+pct+'%' : 'Você perdeu todas as vidas'}</h2><p>${rating}</p>`;
+    area.appendChild(wrap);
+    if(finished) addXP(correctCount*5, 'boss');
+    const b = el('button','btn btn-primary btn-block','← Voltar ao mapa');
+    b.onclick = ()=>navigate({name:'home'});
+    area.appendChild(b);
+    const b2 = el('button','btn btn-secondary btn-block','Tentar de novo');
+    b2.style.marginTop='8px';
+    b2.onclick = ()=>navigate({name:'boss'});
+    area.appendChild(b2);
+  }
+  nextQuestion();
+}
+
+/* ============================= INIT ============================= */
+document.getElementById('brandBtn').onclick = ()=>navigate({name:'home'});
+document.getElementById('themeBtn').onclick = ()=>{
+  const cur = document.body.getAttribute('data-theme');
+  const next = cur==='dark' ? 'light':'dark';
+  document.body.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next==='dark' ? '🌙' : '☀️';
+  state.theme = next; saveState();
+};
+(function initTheme(){
+  document.body.setAttribute('data-theme', state.theme||'dark');
+  document.getElementById('themeBtn').textContent = (state.theme==='light') ? '☀️' : '🌙';
+})();
+
+render();
+</script>
+</body>
+</html>
